@@ -52,10 +52,10 @@ A sample report with anonymized IPs is available here:
 
 | Metric                  | Value          |
 |-------------------------|----------------|
-| Active hosts discovered | 8		   |
-| Critical risk hosts     | 1 		   |
-| Medium risk hosts       | 4  		   |
-| Low risk hosts          | 3 		   |
+| Active hosts discovered | 8		           |
+| Critical risk hosts     | 1 		         |
+| Medium risk hosts       | 4  		         |
+| Low risk hosts          | 3 		         |
 | Total open ports found  | 19             |
 | Most exposed service    | SMB (port 445) |
 | Scan duration           | ~8 minutes     |
@@ -65,13 +65,13 @@ A sample report with anonymized IPs is available here:
 ## Screenshots
 
 ### HTML report — risk overview
-![Report overview](docs/screenshots/report-overview.png)
+![Report overview](docs/screenshots/Captura4.png)
 
 ### Risk distribution and top services charts
-![Charts](docs/screenshots/report-charts.png)
+![Charts](docs/screenshots/Captura5.png)
 
 ### Critical host detected — Windows with SMB exposed
-![Critical host](docs/screenshots/report-critical.png)
+![Critical host](docs/screenshots/Captura6.png)
 
 ---
 
