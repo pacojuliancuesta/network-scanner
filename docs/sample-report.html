@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Network Security Scan Report — Sample</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Courier New', monospace; background: #0a0e1a; color: #c9d1d9; }
+  .header { background: #0d1117; border-bottom: 1px solid #1f6feb; padding: 2rem 3rem; }
+  .header h1 { color: #58a6ff; font-size: 1.8rem; letter-spacing: 2px; }
+  .header p  { color: #8b949e; margin-top: 0.5rem; font-size: 0.9rem; }
+  .notice { background: #1a1f2e; border: 1px solid #ffd700; border-radius: 8px; margin: 1.5rem 3rem 0; padding: 0.8rem 1.2rem; font-size: 0.82rem; color: #ffd700; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding: 2rem 3rem; }
+  .stat-card { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; text-align: center; }
+  .stat-card .num  { font-size: 2.5rem; font-weight: bold; }
+  .stat-card .label{ font-size: 0.8rem; color: #8b949e; margin-top: 0.3rem; letter-spacing: 1px; }
+  .critical .num { color: #ff4444; }
+  .high     .num { color: #ff8c00; }
+  .medium   .num { color: #ffd700; }
+  .low      .num { color: #00ff88; }
+  .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 0 3rem 2rem; }
+  .chart-card { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; }
+  .chart-card h3 { color: #58a6ff; font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 1rem; }
+  .devices { padding: 0 3rem 3rem; }
+  .devices h2 { color: #58a6ff; margin-bottom: 1rem; letter-spacing: 1px; }
+  .device { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
+  .device-header { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid #21262d; }
+  .device-ip   { color: #58a6ff; font-size: 1.1rem; font-weight: bold; min-width: 140px; }
+  .device-host { color: #8b949e; font-size: 0.85rem; flex: 1; }
+  .device-os   { color: #8b949e; font-size: 0.8rem; flex: 2; }
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; }
+  .badge.critical { background: #3d0000; color: #ff4444; border: 1px solid #ff4444; }
+  .badge.high     { background: #2d1a00; color: #ff8c00; border: 1px solid #ff8c00; }
+  .badge.medium   { background: #2d2600; color: #ffd700; border: 1px solid #ffd700; }
+  .badge.low      { background: #00200e; color: #00ff88; border: 1px solid #00ff88; }
+  .ports { padding: 1rem 1.5rem; }
+  .ports table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .ports th { color: #8b949e; text-align: left; padding: 0.4rem 0.8rem; border-bottom: 1px solid #21262d; letter-spacing: 1px; font-size: 0.75rem; }
+  .ports td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #161b22; }
+  .ports tr:last-child td { border-bottom: none; }
+  .port-num { color: #58a6ff; font-weight: bold; }
+  .no-ports { color: #8b949e; font-size: 0.85rem; padding: 0.5rem 0; }
+  .footer { text-align: center; padding: 2rem; color: #8b949e; font-size: 0.8rem; border-top: 1px solid #21262d; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>// NETWORK SECURITY SCAN REPORT</h1>
+  <p>Target: 192.168.1.0/24 &nbsp;|&nbsp; Scan time: 2026-04-07 15:22:14 &nbsp;|&nbsp; Hosts found: 8</p>
+</div>
+
+<div class="notice">
+⚠️ Las direcciones IP y los nombres de host se han anonimizado para proteger la privacidad de la red. Este es un informe de muestra generado a partir de un escaneo real en una red de laboratorio doméstica.⚠️ Las direcciones IP y los nombres de host se han anonimizado para proteger la privacidad de la red. Este es un informe de muestra generado a partir de un escaneo real en una red de laboratorio doméstica.
+</div>
+
+<div class="stats">
+  <div class="stat-card critical">
+    <div class="num">1</div>
+    <div class="label">CRITICAL RISK</div>
+  </div>
+  <div class="stat-card high">
+    <div class="num">0</div>
+    <div class="label">HIGH RISK</div>
+  </div>
+  <div class="stat-card medium">
+    <div class="num">4</div>
+    <div class="label">MEDIUM RISK</div>
+  </div>
+  <div class="stat-card low">
+    <div class="num">3</div>
+    <div class="label">LOW RISK</div>
+  </div>
+</div>
+
+<div class="charts">
+  <div class="chart-card">
+    <h3>// RISK DISTRIBUTION</h3>
+    <canvas id="riskChart"></canvas>
+  </div>
+  <div class="chart-card">
+    <h3>// TOP SERVICES DETECTED</h3>
+    <canvas id="portsChart"></canvas>
+  </div>
+</div>
+
+<div class="devices">
+  <h2>// DISCOVERED HOSTS</h2>
+
+  <div class="device">
+    <div class="device-header">
+      <span class="device-ip">192.168.1.X</span>
+      <span class="device-host">gateway</span>
+      <span class="device-os">Linux 2.6.32 - 3.13</span>
+      <span class="badge medium">MEDIUM</span>
+      <span style="color:#8b949e; font-size:0.8rem;">3 ports</span>
+    </div>
+    <div class="ports">
+      <table>
+        <tr><th>PORT</th><th>SERVICE</th><th>VERSION</th><th>RISK</th><th>DESCRIPTION</th></tr>
+        <tr>
+          <td class="port-num">22</td><td>SSH</td>
+          <td style="color:#8b949e">2019.x</td>
+          <td><span class="badge medium">MEDIUM</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Secure shell — check auth config</td>
+        </tr>
+        <tr>
+          <td class="port-num">80</td><td>HTTP</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge medium">MEDIUM</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Web server — unencrypted</td>
+        </tr>
+        <tr>
+          <td class="port-num">443</td><td>HTTPS</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Encrypted web server</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="device">
+    <div class="device-header">
+      <span class="device-ip">192.168.1.XX</span>
+      <span class="device-host">smart-tv-01</span>
+      <span class="device-os">Android TV (Android 5.0)</span>
+      <span class="badge medium">MEDIUM</span>
+      <span style="color:#8b949e; font-size:0.8rem;">4 ports</span>
+    </div>
+    <div class="ports">
+      <table>
+        <tr><th>PORT</th><th>SERVICE</th><th>VERSION</th><th>RISK</th><th>DESCRIPTION</th></tr>
+        <tr>
+          <td class="port-num">80</td><td>HTTP</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge medium">MEDIUM</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Web server — unencrypted</td>
+        </tr>
+        <tr>
+          <td class="port-num">8008</td><td>HTTP</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Cast control interface</td>
+        </tr>
+        <tr>
+          <td class="port-num">8009</td><td>castv2</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Chromecast protocol</td>
+        </tr>
+        <tr>
+          <td class="port-num">8443</td><td>HTTPS-Alt</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Alternative HTTPS port</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="device">
+    <div class="device-header">
+      <span class="device-ip">192.168.1.XX</span>
+      <span class="device-host">device-03</span>
+      <span class="device-os">Linux 3.18</span>
+      <span class="badge low">LOW</span>
+      <span style="color:#8b949e; font-size:0.8rem;">1 ports</span>
+    </div>
+    <div class="ports">
+      <table>
+        <tr><th>PORT</th><th>SERVICE</th><th>VERSION</th><th>RISK</th><th>DESCRIPTION</th></tr>
+        <tr>
+          <td class="port-num">8888</td><td>tcpwrapped</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Unknown service</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="device">
+    <div class="device-header">
+      <span class="device-ip">192.168.1.XX</span>
+      <span class="device-host">device-04</span>
+      <span class="device-os">Linux 4.15 - 5.8</span>
+      <span class="badge medium">MEDIUM</span>
+      <span style="color:#8b949e; font-size:0.8rem;">4 ports</span>
+    </div>
+    <div class="ports">
+      <table>
+        <tr><th>PORT</th><th>SERVICE</th><th>VERSION</th><th>RISK</th><th>DESCRIPTION</th></tr>
+        <tr>
+          <td class="port-num">8008</td><td>HTTP</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Cast control interface</td>
+        </tr>
+        <tr>
+          <td class="port-num">8009</td><td>ajp13</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Unknown service</td>
+        </tr>
+        <tr>
+          <td class="port-num">8080</td><td>HTTP-Alt</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge medium">MEDIUM</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Alternative web port</td>
+        </tr>
+        <tr>
+          <td class="port-num">8443</td><td>HTTPS-Alt</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Alternative HTTPS port</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="device">
+    <div class="device-header">
+      <span class="device-ip">192.168.1.XX</span>
+      <span class="device-host">windows-pc-01</span>
+      <span class="device-os">Microsoft Windows 10</span>
+      <span class="badge critical">CRITICAL</span>
+      <span style="color:#8b949e; font-size:0.8rem;">5 ports</span>
+    </div>
+    <div class="ports">
+      <table>
+        <tr><th>PORT</th><th>SERVICE</th><th>VERSION</th><th>RISK</th><th>DESCRIPTION</th></tr>
+        <tr>
+          <td class="port-num">135</td><td>RPC</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge high">HIGH</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Windows RPC — common attack vector</td>
+        </tr>
+        <tr>
+          <td class="port-num">139</td><td>NetBIOS</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge high">HIGH</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Windows file sharing</td>
+        </tr>
+        <tr>
+          <td class="port-num">445</td><td>SMB</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge critical">CRITICAL</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Windows sharing — EternalBlue target</td>
+        </tr>
+        <tr>
+          <td class="port-num">3306</td><td>MySQL</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge high">HIGH</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">MySQL database — verify access controls</td>
+        </tr>
+        <tr>
+          <td class="port-num">5357</td><td>HTTP</td>
+          <td style="color:#8b949e">2.0</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">WS-Discovery service</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="device">
+    <div class="device-header">
+      <span class="device-ip">192.168.1.XX</span>
+      <span class="device-host">device-06</span>
+      <span class="device-os">Unknown</span>
+      <span class="badge low">LOW</span>
+      <span style="color:#8b949e; font-size:0.8rem;">0 ports</span>
+    </div>
+    <div class="ports">
+      <p class="no-ports">No open ports detected in top 100</p>
+    </div>
+  </div>
+
+  <div class="device">
+    <div class="device-header">
+      <span class="device-ip">192.168.1.XXX</span>
+      <span class="device-host">scanner-lab</span>
+      <span class="device-os">Linux (Ubuntu Server 24.04)</span>
+      <span class="badge medium">MEDIUM</span>
+      <span style="color:#8b949e; font-size:0.8rem;">1 ports</span>
+    </div>
+    <div class="ports">
+      <table>
+        <tr><th>PORT</th><th>SERVICE</th><th>VERSION</th><th>RISK</th><th>DESCRIPTION</th></tr>
+        <tr>
+          <td class="port-num">22</td><td>SSH</td>
+          <td style="color:#8b949e">OpenSSH 9.6p1 Ubuntu</td>
+          <td><span class="badge medium">MEDIUM</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Secure shell — check auth config</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="device">
+    <div class="device-header">
+      <span class="device-ip">192.168.1.XXX</span>
+      <span class="device-host">device-08</span>
+      <span class="device-os">Linux 3.2 - 4.9</span>
+      <span class="badge low">LOW</span>
+      <span style="color:#8b949e; font-size:0.8rem;">1 ports</span>
+    </div>
+    <div class="ports">
+      <table>
+        <tr><th>PORT</th><th>SERVICE</th><th>VERSION</th><th>RISK</th><th>DESCRIPTION</th></tr>
+        <tr>
+          <td class="port-num">53</td><td>DNS</td>
+          <td style="color:#8b949e">—</td>
+          <td><span class="badge low">LOW</span></td>
+          <td style="color:#8b949e; font-size:0.8rem">Domain name resolution</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Generated by network-scanner · github.com/pacojuliancuesta · 2026-04-07 — IPs anonymized for privacy
+</div>
+
+<script>
+new Chart(document.getElementById('riskChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Critical', 'High', 'Medium', 'Low'],
+    datasets: [{
+      data: [1, 0, 4, 3],
+      backgroundColor: ['#ff4444','#ff8c00','#ffd700','#00ff88'],
+      borderColor: '#0d1117',
+      borderWidth: 3
+    }]
+  },
+  options: { plugins: { legend: { labels: { color: '#c9d1d9' } } } }
+});
+
+new Chart(document.getElementById('portsChart'), {
+  type: 'bar',
+  data: {
+    labels: ['HTTP','SSH','HTTPS-Alt','SMB','NetBIOS','RPC','MySQL','DNS'],
+    datasets: [{
+      data: [3,2,2,1,1,1,1,1],
+      backgroundColor: '#1f6feb',
+      borderRadius: 4
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
+      y: { ticks: { color: '#8b949e', stepSize: 1 }, grid: { color: '#21262d' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
